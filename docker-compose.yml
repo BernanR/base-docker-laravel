@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+
+  # Web Server Service
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./application:/var/www
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - application.dev
+      - db
+    networks:
+      - setup_network
+
+  db:
+    image: postgres
+    container_name: postgres
+    volumes:
+      - ./docker/postgresql/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment: 
+      POSTGRES_DB: brnom30desafio
+      POSTGRES_USER: root 
+      POSTGRES_PASSWORD: password 
+    networks:
+      - setup_network
+
+  # Application Service
+  application.dev:
+    container_name: brn-OM30-desafio
+    build: 
+      context: ./docker/php
+      dockerfile: Dockerfile
+      args:
+          user: benx
+          uid: 1000
+    volumes:
+      - ./application:/var/www
+    ports:
+      - "9000:9000"
+    working_dir: /var/www
+    networks:
+      - setup_network
+
+  redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes --requirepass password
+    volumes:
+      - ./docker/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+    networks:
+      - setup_network
+     
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgAdmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db 
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: password 
+    networks:
+      - setup_network
+
+networks:
+  setup_network:
+    driver: bridge
