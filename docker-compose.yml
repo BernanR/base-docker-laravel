@@ -25,7 +25,7 @@ services:
     ports:
       - "5432:5432"
     environment: 
-      POSTGRES_DB: brnom30desafio
+      POSTGRES_DB: postgreesql
       POSTGRES_USER: root 
       POSTGRES_PASSWORD: password 
     networks:
@@ -33,7 +33,7 @@ services:
 
   # Application Service
   application.dev:
-    container_name: brn-OM30-desafio
+    container_name: appication-container
     build: 
       context: ./docker/php
       dockerfile: Dockerfile
